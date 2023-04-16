@@ -85,7 +85,7 @@ const (
 	FourthQuarter
 )
 
-func GetStartEndTimeSpanX(start, end *DateTime) (s *time.Time, e *time.Time) {
+func GetDateTimeSpanByStartEnd(start, end *DateTime) (s *time.Time, e *time.Time) {
 	if start != nil {
 		t := time.Time(*start)
 		temp := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
@@ -99,7 +99,7 @@ func GetStartEndTimeSpanX(start, end *DateTime) (s *time.Time, e *time.Time) {
 	return
 }
 
-func GetStartEndTimeSpan(start, end *time.Time) (s *time.Time, e *time.Time) {
+func GetTimeSpanByStartEnd(start, end *time.Time) (s *time.Time, e *time.Time) {
 	if start != nil {
 		temp := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, start.Location())
 		s = &temp
