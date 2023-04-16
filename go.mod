@@ -1,3 +1,3 @@
-module biz.ycloud/xlib
+module orinchen/xlib
 
 go 1.20
