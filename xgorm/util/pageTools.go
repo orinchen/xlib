@@ -5,24 +5,35 @@ import (
 	"sync"
 )
 
-func queryPage(db *gorm.DB, model interface{}, condition Condition, dest interface{}) (count int64, err error) {
+func QueryPage(db *gorm.DB, model interface{}, condition Condition, dest interface{}) (count int64, err error) {
 	whereStr, args := condition.Get()
 	tx := db.Model(model).Where(whereStr, args...)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
+	var countErr error
+	var queryErr error
+
 	go func() {
-		err = tx.Count(&count).Error
+		countErr = tx.Count(&count).Error
 		wg.Done()
 	}()
 
 	go func() {
-		err = tx.Find(dest).Error
+		queryErr = tx.Find(dest).Error
 		wg.Done()
 	}()
 
 	wg.Wait()
+
+	if countErr != nil {
+		return 0, countErr
+	}
+
+	if queryErr != nil {
+		return 0, queryErr
+	}
 
 	return
 }
