@@ -6,19 +6,25 @@ import (
 )
 
 func QueryPage(db *gorm.DB, dest interface{}, page, size int) (count int64, err error) {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-
 	var countErr error
 	var queryErr error
 
+	var countTx = db.Begin()
+	var queryTx = db.Begin()
+	defer func() {
+		countTx.Commit()
+		queryTx.Commit()
+	}()
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 	go func() {
-		countErr = db.Count(&count).Error
+		countErr = countTx.Count(&count).Error
 		wg.Done()
 	}()
 
 	go func() {
-		queryErr = db.Offset(size * (page - 1)).Limit(size).Find(dest).Error
+		queryErr = queryTx.Offset(size * (page - 1)).Limit(size).Find(dest).Error
 		wg.Done()
 	}()
 
