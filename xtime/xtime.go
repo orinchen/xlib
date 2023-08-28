@@ -48,21 +48,15 @@ var layouts = []string{
 }
 
 func AutoParse(value string) (t *time.Time, err error) {
-	var tt time.Time
-	for _, layout := range layouts {
-		tt, err = time.Parse(layout, value)
-		if err == nil {
-			t = &tt
-			return
-		}
-	}
-	return nil, fmt.Errorf("%s, 该时间格式无法解析", value)
+	return AutoParseInLocation(value, time.Now().Location())
 }
 
-func AutoParseInLocation(value string, loc *time.Location) (t time.Time, err error) {
+func AutoParseInLocation(value string, loc *time.Location) (t *time.Time, err error) {
+	var tt time.Time
 	for _, layout := range layouts {
-		t, err = time.ParseInLocation(layout, value, loc)
+		tt, err = time.ParseInLocation(layout, value, loc)
 		if err == nil {
+			t = &tt
 			return
 		}
 	}
