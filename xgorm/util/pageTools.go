@@ -24,7 +24,7 @@ func QueryPage(db *gorm.DB, dest interface{}, page, size int) (count int64, err 
 	}()
 
 	go func() {
-		queryErr = queryTx.Offset(size * (page - 1)).Limit(size).Find(dest).Error
+		queryErr = queryTx.Limit(size).Offset(size * (page - 1)).Find(dest).Error
 		wg.Done()
 	}()
 
