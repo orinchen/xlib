@@ -2,12 +2,9 @@ package xlog
 
 import (
 	"context"
-	"fmt"
-	"go.uber.org/zap"
+	"go.uber.org/zap/exp/zapslog"
 	"go.uber.org/zap/zapcore"
-	"log"
-	"os"
-	"runtime/debug"
+	"log/slog"
 	"sync"
 )
 
@@ -15,111 +12,79 @@ type ctxKey struct{}
 
 var once sync.Once
 
-var logger *zap.Logger
+var core zapcore.Core
 
-func get() *zap.Logger {
+var logger *slog.Logger
+
+func InitWithZap(zapCore zapcore.Core) {
 	once.Do(func() {
-		stdout := zapcore.AddSync(os.Stdout)
-		level := zap.InfoLevel
-		levelEnv := os.Getenv("LOG_LEVEL")
-		if levelEnv != "" {
-			levelFromEnv, err := zapcore.ParseLevel(levelEnv)
-			if err != nil {
-				log.Println(
-					fmt.Errorf("invalid level, defaulting to INFO: %w", err),
-				)
-			}
-
-			level = levelFromEnv
-		}
-
-		logLevel := zap.NewAtomicLevelAt(level)
-
-		productionCfg := zap.NewProductionEncoderConfig()
-		productionCfg.TimeKey = "timestamp"
-		productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-
-		developmentCfg := zap.NewDevelopmentEncoderConfig()
-		developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
-
-		consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
-
-		buildInfo, ok := debug.ReadBuildInfo()
-		if ok {
-			for _, v := range buildInfo.Settings {
-				if v.Key == "vcs.revision" {
-					break
-				}
-			}
-		}
-
-		// log to multiple destinations (console and file)
-		// extra fields are added to the JSON output alone
-		core := zapcore.NewTee(
-			zapcore.NewCore(consoleEncoder, stdout, logLevel),
-		)
-
-		logger = zap.New(core)
+		core = zapCore
+		logger = slog.New(zapslog.NewHandler(core, nil))
 	})
-	return logger
 }
 
 func Sync() {
-	_ = get().Sync()
+	_ = core.Sync()
 }
 
-func GlobalWith(fields ...zap.Field) {
-	logger = get().With(fields...)
+func GlobalWith(fields ...any) {
+	if logger == nil {
+		return
+	}
+	logger = logger.With(fields...)
 }
 
-func With(fields ...zap.Field) *zap.Logger {
-	return get().With(fields...)
+func With(fields ...any) *slog.Logger {
+	if logger == nil {
+		return nil
+	}
+	return logger.With(fields...)
 }
 
-func Debug(msg string, fields ...zap.Field) {
-	get().Debug(msg, fields...)
+func Debug(msg string, fields ...any) {
+	if logger == nil {
+		return
+	}
+	logger.Debug(msg, fields...)
 }
 
-func Info(msg string, fields ...zap.Field) {
-	get().Info(msg, fields...)
+func Info(msg string, fields ...any) {
+	if logger == nil {
+		return
+	}
+	logger.Info(msg, fields...)
 }
 
-func Warn(msg string, fields ...zap.Field) {
-	get().Warn(msg, fields...)
+func Warn(msg string, fields ...any) {
+	if logger == nil {
+		return
+	}
+	logger.Warn(msg, fields...)
 }
 
-func Error(msg string, fields ...zap.Field) {
-	get().Error(msg, fields...)
-}
-
-func DPanic(msg string, fields ...zap.Field) {
-	get().DPanic(msg, fields...)
-}
-
-func Panic(msg string, fields ...zap.Field) {
-	get().Panic(msg, fields...)
-}
-
-func Fatal(msg string, fields ...zap.Field) {
-	get().Fatal(msg, fields...)
+func Error(msg string, fields ...any) {
+	if logger == nil {
+		return
+	}
+	logger.Error(msg, fields...)
 }
 
 // FromCtx returns the Logger associated with the ctx. If no logger
 // is associated, the default logger is returned, unless it is nil
 // in which case a disabled logger is returned.
-func FromCtx(ctx context.Context) *zap.Logger {
-	if l, ok := ctx.Value(ctxKey{}).(*zap.Logger); ok {
+func FromCtx(ctx context.Context) *slog.Logger {
+	if l, ok := ctx.Value(ctxKey{}).(*slog.Logger); ok {
 		return l
 	} else if l := logger; l != nil {
 		return l
 	}
 
-	return zap.NewNop()
+	return slog.Default()
 }
 
 // WithCtx returns a copy of ctx with the Logger attached.
-func WithCtx(ctx context.Context, l *zap.Logger) context.Context {
-	if lp, ok := ctx.Value(ctxKey{}).(*zap.Logger); ok {
+func WithCtx(ctx context.Context, l *slog.Logger) context.Context {
+	if lp, ok := ctx.Value(ctxKey{}).(*slog.Logger); ok {
 		if lp == l {
 			// Do not store same logger.
 			return ctx
