@@ -1,6 +1,10 @@
 package xstring
 
 import (
+	"bytes"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
+	"io"
 	"strings"
 	"unsafe"
 )
@@ -18,5 +22,24 @@ func StringToBytes(s string) []byte {
 }
 
 func BytesToString(b []byte) string {
-	return unsafe.String(unsafe.SliceData(b), len(b))
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func GbkToUtf8(s []byte) ([]byte, error) {
+	reader := transform.NewReader(bytes.NewReader(s), simplifiedchinese.GBK.NewDecoder())
+	d, e := io.ReadAll(reader)
+	if e != nil {
+		return nil, e
+	}
+	return d, nil
+}
+
+// UTF-8 转 GBK
+func Utf8ToGbk(s []byte) ([]byte, error) {
+	reader := transform.NewReader(bytes.NewReader(s), simplifiedchinese.GBK.NewEncoder())
+	d, e := io.ReadAll(reader)
+	if e != nil {
+		return nil, e
+	}
+	return d, nil
 }
