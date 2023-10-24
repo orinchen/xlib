@@ -15,8 +15,12 @@ func Sync() {
 	_ = stdLogger.Sync()
 }
 
-func With(fields ...zap.Field) {
-	stdLogger.With(fields...)
+func GlobalWith(fields ...zap.Field) {
+	stdLogger = stdLogger.With(fields...)
+}
+
+func With(fields ...zap.Field) *zap.Logger {
+	return stdLogger.With(fields...)
 }
 
 func Debug(msg string, fields ...zap.Field) {
