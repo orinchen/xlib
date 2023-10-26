@@ -1,15 +1,17 @@
-package xlog
+package xslog
 
 import (
 	"fmt"
 	"go.uber.org/zap"
+	"go.uber.org/zap/exp/zapslog"
 	"go.uber.org/zap/zapcore"
 	"log"
+	"log/slog"
 	"os"
 	"runtime/debug"
 )
 
-func creatorStdIOZapCore() zapcore.Core {
+func CreatorStdIOZapCore() zapcore.Core {
 	stdout := zapcore.AddSync(os.Stdout)
 	level := zap.InfoLevel
 	levelEnv := os.Getenv("LOG_LEVEL")
@@ -48,7 +50,14 @@ func creatorStdIOZapCore() zapcore.Core {
 	)
 }
 
-func creatorStdIOZapLogger() *zap.Logger {
-	core := creatorStdIOZapCore()
+func InitZapBackend() (core zapcore.Core) {
+	core = CreatorStdIOZapCore()
+	sl := slog.New(zapslog.NewHandler(core, nil))
+	slog.SetDefault(sl)
+	return core
+}
+
+func CreatorStdIOZapLogger() *zap.Logger {
+	core := CreatorStdIOZapCore()
 	return zap.New(core)
 }

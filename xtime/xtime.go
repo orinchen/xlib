@@ -15,8 +15,11 @@ import (
 )
 
 const (
-	DateTimeCN = "2006年01月02日 15时04分05秒"
-	DateOnlyCN = "2006年01月02日"
+	TimeOnlyCN       = "15时04分05秒"
+	DateTimeCN       = "2006年01月02日 15时04分05秒"
+	DateOnlyCN       = "2006年01月02日"
+	RFC3339WithoutTZ = "2006-01-02T15:04:05"
+	RFC3399Msec      = "2006-01-02T15:04:05.000Z07:00"
 )
 
 var layouts = []string{
@@ -24,8 +27,9 @@ var layouts = []string{
 	time.DateOnly,
 	DateTimeCN,
 	DateOnlyCN,
-	"2006-01-02T15:04:05", // iso8601 without timezone
+	RFC3339WithoutTZ,
 	time.RFC3339,
+	RFC3399Msec,
 	time.ANSIC,
 	time.UnixDate,
 	time.RubyDate,
@@ -45,6 +49,7 @@ var layouts = []string{
 	"02 Jan 2006",
 	"2006-01-02 15:04:05 -07:00",
 	"2006-01-02 15:04:05 -0700",
+	"20060102150405",
 }
 
 func AutoParse(value string) (t *time.Time, err error) {
