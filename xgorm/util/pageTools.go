@@ -1,11 +1,49 @@
 package util
 
 import (
+	"errors"
+	"gorm.io/gen"
+	"gorm.io/gen/field"
 	"gorm.io/gorm"
+	"math"
 	"sync"
 )
 
-func QueryPage(db *gorm.DB, dest interface{}, page, size int) (count int64, err error) {
+func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (items T, recordCount, pageCount int64, err error) {
+	offset := (page - 1) * size
+	limit := size
+	items, recordCount, err = QueryListWithGen[T](do, offset, limit, order...)
+	pageCount = int64(math.Ceil(float64(recordCount) / float64(size)))
+	return
+}
+
+func QueryListWithGen[T any](do gen.DO, offset, limit int, order ...field.Expr) (items T, count int64, err error) {
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	var countErr, queryErr error
+	var tempItems any
+	go func() {
+		tempItems, queryErr = do.Order(order...).Offset(offset).Limit(limit).Find()
+		if queryErr == nil {
+			ok := false
+			if items, ok = tempItems.(T); !ok {
+				queryErr = errors.New("query result type is not match")
+			}
+		}
+		wg.Done()
+	}()
+	go func() {
+		count, countErr = do.Count()
+		wg.Done()
+	}()
+	wg.Wait()
+	if countErr != nil || queryErr != nil {
+		err = errors.Join(countErr, queryErr)
+	}
+	return
+}
+
+func QueryPage(db *gorm.DB, order, dest interface{}, page, size int) (count int64, err error) {
 	var countErr error
 	var queryErr error
 
@@ -24,7 +62,7 @@ func QueryPage(db *gorm.DB, dest interface{}, page, size int) (count int64, err 
 	}()
 
 	go func() {
-		queryErr = queryTx.Limit(size).Offset(size * (page - 1)).Find(dest).Error
+		queryErr = queryTx.Order(order).Limit(size).Offset(size * (page - 1)).Find(dest).Error
 		wg.Done()
 	}()
 
@@ -41,9 +79,9 @@ func QueryPage(db *gorm.DB, dest interface{}, page, size int) (count int64, err 
 	return
 }
 
-func QueryPageWithCondition(db *gorm.DB, condition Condition, dest interface{}, page, size int) (count int64, err error) {
+func QueryPageWithCondition(db *gorm.DB, condition Condition, order, dest interface{}, page, size int) (count int64, err error) {
 	whereStr, args := condition.Get()
 	tx := db.Where(whereStr, args...)
 
-	return QueryPage(tx, dest, page, size)
+	return QueryPage(tx, order, dest, page, size)
 }

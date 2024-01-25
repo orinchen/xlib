@@ -10,11 +10,19 @@ import (
 )
 
 func IsNilOrWhitespace(s *string) bool {
-	return s == nil || IsWhitespace(*s)
+	return s == nil || len(strings.TrimSpace(*s)) == 0
 }
 
 func IsWhitespace(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
+}
+
+func IsNilOrEmpty(s *string) bool {
+	return s == nil || len(*s) == 0
+}
+
+func IsEmpty(s string) bool {
+	return len(s) == 0
 }
 
 func StringToBytes(s string) []byte {
