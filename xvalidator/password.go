@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-var ComplexPwdVerifyTag = "complex_pwd"
+var ComplexPwdVerifyTag = "xv_complex_pwd"
 var ComplexPwdFieldErrorInfo = "密码应包含数字、大/小写字母、特殊字符中的3种, 且至少8个字符"
 
 func RegisterComplexPwdValidation(validate *validator.Validate) error {

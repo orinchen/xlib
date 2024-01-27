@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-var CnMobileVerifyTag = "cn_mobile"
+var CnMobileVerifyTag = "xv_cn_mobile"
 
 func RegisterCnMobileValidation(validate *validator.Validate) error {
 	return validate.RegisterValidation(CnMobileVerifyTag, VerifyCnMobile)

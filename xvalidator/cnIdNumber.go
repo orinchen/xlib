@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-var CnIdNumberVerifyTag = "cn_id_number"
+var CnIdNumberVerifyTag = "xv_cn_id_number"
 
 func RegisterCnIdNumberValidation(validate *validator.Validate) error {
 	return validate.RegisterValidation(CnIdNumberVerifyTag, VerifyCnIdNumberNumber)
