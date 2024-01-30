@@ -20,19 +20,7 @@ func VerifyPwd(f validator.FieldLevel) bool {
 		return false
 	}
 
-	pwdPattern := `^[0-9a-zA-Z!@#$%^&*~-_+]{8,20}$`
-	reg, err := regexp.Compile(pwdPattern) // filter exclude chars
-	if err != nil {
-		return false
-	}
-
-	match := reg.MatchString(val)
-	if !match {
-		fmt.Println("not match error.")
-		return false
-	}
-
-	var cnt int = 0          // 满足3中以上即可通过验证
+	var cnt = 0              // 满足3中以上即可通过验证
 	patternList := []string{ // 数字、大小写字母、特殊字符
 		`[0-9]+`,
 		`[a-z]+`,
@@ -40,7 +28,7 @@ func VerifyPwd(f validator.FieldLevel) bool {
 		`[!@#$%^&*~-_+]+`,
 	}
 	for _, pattern := range patternList {
-		match, _ = regexp.MatchString(pattern, val)
+		match, _ := regexp.MatchString(pattern, val)
 		if match {
 			cnt++
 		}
