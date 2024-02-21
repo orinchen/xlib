@@ -3,14 +3,10 @@ package xgorm
 import (
 	"fmt"
 	mysqlDriver "github.com/go-sql-driver/mysql"
-	"github.com/orinchen/xlib/xgorm/plugin/trace"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"log"
-	"os"
 	"strings"
 	"time"
 )
@@ -60,9 +56,7 @@ func DefaultConfig() *Config {
 }
 
 // Build ...
-func (config *Config) Build() *gorm.DB {
-	var err error
-	var db *gorm.DB
+func (config *Config) Build() (db *gorm.DB, err error) {
 	var dialector gorm.Dialector
 	switch strings.ToLower(config.Driver) {
 	case "postgres":
@@ -109,22 +103,8 @@ func (config *Config) Build() *gorm.DB {
 		})
 	}
 
-	if db, err = gorm.Open(dialector, &gorm.Config{
-		Logger: func(debug bool) logger.Interface {
-			if !debug {
-				return nil
-			}
-			return logger.New(
-				log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-				logger.Config{
-					SlowThreshold: 100 * time.Millisecond, // 慢 SQL 阈值
-					LogLevel:      logger.Info,            // Log level
-					Colorful:      true,                   // 彩色打印
-				},
-			)
-		}(config.Debug),
-	}); err != nil {
-		return nil
+	if db, err = gorm.Open(dialector); err != nil {
+		return
 	}
 
 	sqlDb, _ := db.DB()
@@ -132,6 +112,14 @@ func (config *Config) Build() *gorm.DB {
 	sqlDb.SetMaxOpenConns(config.MaxOpenConns)
 	sqlDb.SetConnMaxLifetime((time.Duration(config.ConnMaxLifetime)) * time.Second)
 	sqlDb.SetConnMaxIdleTime((time.Duration(config.ConnMaxIdleTime)) * time.Second)
-	db.Use(trace.NewPlugin())
-	return db
+	return
+}
+
+// MustBuild 返回数据库实例
+func (config *Config) MustBuild() *gorm.DB {
+	if db, err := config.Build(); err != nil {
+		panic(err)
+	} else {
+		return db
+	}
 }

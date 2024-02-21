@@ -1,14 +1,20 @@
 package xvalidator
 
 import (
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"regexp"
 )
 
 var CnIdNumberVerifyTag = "xv_cn_id_number"
 
-func RegisterCnIdNumberValidation(validate *validator.Validate) error {
-	return validate.RegisterValidation(CnIdNumberVerifyTag, VerifyCnIdNumberNumber)
+func RegisterCnIdNumberValidation(validate *validator.Validate, trans ut.Translator) error {
+	err := validate.RegisterValidation(CnIdNumberVerifyTag, VerifyCnIdNumberNumber)
+	if err != nil || trans == nil {
+		return err
+	}
+
+	return validate.RegisterTranslation(CnIdNumberVerifyTag, trans, registerTranslator(CnMobileVerifyTag, "{0}身份证号码格式不正确"), translate)
 }
 
 func VerifyCnIdNumberNumber(f validator.FieldLevel) bool {

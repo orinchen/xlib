@@ -28,7 +28,7 @@ func Init(configs ...Config) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	for _, config := range configs {
-		instances.Store(config.Name, config.Build())
+		instances.Store(config.Name, config.MustBuild())
 	}
 }
 

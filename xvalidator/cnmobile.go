@@ -2,14 +2,20 @@ package xvalidator
 
 import (
 	"fmt"
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"regexp"
 )
 
 var CnMobileVerifyTag = "xv_cn_mobile"
 
-func RegisterCnMobileValidation(validate *validator.Validate) error {
-	return validate.RegisterValidation(CnMobileVerifyTag, VerifyCnMobile)
+func RegisterCnMobileValidation(validate *validator.Validate, trans ut.Translator) error {
+	err := validate.RegisterValidation(CnMobileVerifyTag, VerifyCnMobile)
+	if err != nil || trans == nil {
+		return err
+	}
+
+	return validate.RegisterTranslation(CnMobileVerifyTag, trans, registerTranslator(CnMobileVerifyTag, "{0}手机号码格式不正确"), translate)
 }
 
 func VerifyCnMobile(f validator.FieldLevel) bool {
