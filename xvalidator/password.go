@@ -8,7 +8,7 @@ import (
 )
 
 var ComplexPwdVerifyTag = "xv_complex_pwd"
-var ComplexPwdFieldErrorInfo = "密码应包含数字、大/小写字母、特殊字符中的3种, 且至少8个字符"
+var ComplexPwdErrorInfo = "{0}:密码应包含数字、大/小写字母、特殊字符中的3种, 且至少8个字符"
 
 func RegisterComplexPwdValidation(validate *validator.Validate, trans ut.Translator) error {
 	err := validate.RegisterValidation(ComplexPwdVerifyTag, VerifyPwd)
@@ -16,7 +16,7 @@ func RegisterComplexPwdValidation(validate *validator.Validate, trans ut.Transla
 		return err
 	}
 
-	return validate.RegisterTranslation(ComplexPwdVerifyTag, trans, registerTranslator(ComplexPwdVerifyTag, ComplexPwdFieldErrorInfo), translate)
+	return validate.RegisterTranslation(ComplexPwdVerifyTag, trans, registerTranslator(ComplexPwdVerifyTag, ComplexPwdErrorInfo), translate)
 }
 
 func VerifyPwd(f validator.FieldLevel) bool {

@@ -7,6 +7,7 @@ import (
 )
 
 var CnIdNumberVerifyTag = "xv_cn_id_number"
+var CnIdNumberErrorInfo = "{0}:身份证号码格式不正确"
 
 func RegisterCnIdNumberValidation(validate *validator.Validate, trans ut.Translator) error {
 	err := validate.RegisterValidation(CnIdNumberVerifyTag, VerifyCnIdNumberNumber)
@@ -14,7 +15,7 @@ func RegisterCnIdNumberValidation(validate *validator.Validate, trans ut.Transla
 		return err
 	}
 
-	return validate.RegisterTranslation(CnIdNumberVerifyTag, trans, registerTranslator(CnIdNumberVerifyTag, "{0}身份证号码格式不正确"), translate)
+	return validate.RegisterTranslation(CnIdNumberVerifyTag, trans, registerTranslator(CnIdNumberVerifyTag, CnIdNumberErrorInfo), translate)
 }
 
 func VerifyCnIdNumberNumber(f validator.FieldLevel) bool {

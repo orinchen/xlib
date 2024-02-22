@@ -8,6 +8,7 @@ import (
 )
 
 var CnMobileVerifyTag = "xv_cn_mobile"
+var CnMobileErrorInfo = "{0}:手机号码格式不正确"
 
 func RegisterCnMobileValidation(validate *validator.Validate, trans ut.Translator) error {
 	err := validate.RegisterValidation(CnMobileVerifyTag, VerifyCnMobile)
@@ -15,7 +16,7 @@ func RegisterCnMobileValidation(validate *validator.Validate, trans ut.Translato
 		return err
 	}
 
-	return validate.RegisterTranslation(CnMobileVerifyTag, trans, registerTranslator(CnMobileVerifyTag, "{0}手机号码格式不正确"), translate)
+	return validate.RegisterTranslation(CnMobileVerifyTag, trans, registerTranslator(CnMobileVerifyTag, CnMobileErrorInfo), translate)
 }
 
 func VerifyCnMobile(f validator.FieldLevel) bool {
