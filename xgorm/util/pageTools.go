@@ -2,11 +2,11 @@ package util
 
 import (
 	"errors"
+	"github.com/orinchen/xlib/xwg"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"math"
-	"sync"
 )
 
 func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (items T, recordCount, pageCount int64, err error) {
@@ -18,35 +18,33 @@ func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (it
 }
 
 func QueryListWithGen[T any](do gen.DO, offset, limit int, order ...field.Expr) (items T, count int64, err error) {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	var countErr, queryErr error
+	wg := xwg.Group{}
 	var tempItems any
-	go func() {
-		tempItems, queryErr = do.Order(order...).Offset(offset).Limit(limit).Find()
-		if queryErr == nil {
+
+	wg.Go(func() error {
+		var _err error
+		tempItems, _err = do.Order(order...).Offset(offset).Limit(limit).Find()
+		if _err == nil {
 			ok := false
 			if items, ok = tempItems.(T); !ok {
-				queryErr = errors.New("query result type is not match")
+				_err = errors.New("query result type is not match")
 			}
 		}
-		wg.Done()
-	}()
-	go func() {
-		count, countErr = do.Count()
-		wg.Done()
-	}()
-	wg.Wait()
-	if countErr != nil || queryErr != nil {
-		err = errors.Join(countErr, queryErr)
-	}
+
+		return _err
+	})
+
+	wg.Go(func() error {
+		var _err error
+		count, _err = do.Count()
+		return _err
+	})
+
+	err = wg.Wait()
 	return
 }
 
 func QueryPage(db *gorm.DB, order, dest interface{}, page, size int) (count int64, err error) {
-	var countErr error
-	var queryErr error
-
 	var countTx = db.Begin()
 	var queryTx = db.Begin()
 	defer func() {
@@ -54,27 +52,17 @@ func QueryPage(db *gorm.DB, order, dest interface{}, page, size int) (count int6
 		queryTx.Commit()
 	}()
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	go func() {
-		countErr = countTx.Count(&count).Error
-		wg.Done()
-	}()
+	wg := xwg.Group{}
 
-	go func() {
-		queryErr = queryTx.Order(order).Limit(size).Offset(size * (page - 1)).Find(dest).Error
-		wg.Done()
-	}()
+	wg.Go(func() error {
+		return countTx.Count(&count).Error
+	})
 
-	wg.Wait()
+	wg.Go(func() error {
+		return queryTx.Order(order).Limit(size).Offset(size * (page - 1)).Find(dest).Error
+	})
 
-	if countErr != nil {
-		return 0, countErr
-	}
-
-	if queryErr != nil {
-		return 0, queryErr
-	}
+	err = wg.Wait()
 
 	return
 }
