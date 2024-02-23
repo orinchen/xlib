@@ -2,7 +2,7 @@ package util
 
 import (
 	"errors"
-	"github.com/orinchen/xlib/xwg"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -18,9 +18,8 @@ func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (it
 }
 
 func QueryListWithGen[T any](do gen.DO, offset, limit int, order ...field.Expr) (items T, count int64, err error) {
-	wg := xwg.Group{}
 	var tempItems any
-
+	wg := errgroup.Group{}
 	wg.Go(func() error {
 		var _err error
 		tempItems, _err = do.Order(order...).Offset(offset).Limit(limit).Find()
@@ -52,7 +51,7 @@ func QueryPage(db *gorm.DB, order, dest interface{}, page, size int) (count int6
 		queryTx.Commit()
 	}()
 
-	wg := xwg.Group{}
+	wg := errgroup.Group{}
 
 	wg.Go(func() error {
 		return countTx.Count(&count).Error
