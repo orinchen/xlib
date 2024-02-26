@@ -9,7 +9,7 @@ import (
 	"math"
 )
 
-func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (items T, recordCount, pageCount int64, err error) {
+func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (items []T, recordCount, pageCount int64, err error) {
 	offset := (page - 1) * size
 	limit := size
 	items, recordCount, err = QueryListWithGen[T](do, offset, limit, order...)
@@ -17,7 +17,7 @@ func QueryPageWithGen[T any](do gen.DO, page, size int, order ...field.Expr) (it
 	return
 }
 
-func QueryListWithGen[T any](do gen.DO, offset, limit int, order ...field.Expr) (items T, count int64, err error) {
+func QueryListWithGen[T any](do gen.DO, offset, limit int, order ...field.Expr) (items []T, count int64, err error) {
 	var tempItems any
 	wg := errgroup.Group{}
 	wg.Go(func() error {
@@ -25,7 +25,7 @@ func QueryListWithGen[T any](do gen.DO, offset, limit int, order ...field.Expr) 
 		tempItems, _err = do.Order(order...).Offset(offset).Limit(limit).Find()
 		if _err == nil {
 			ok := false
-			if items, ok = tempItems.(T); !ok {
+			if items, ok = tempItems.([]T); !ok {
 				_err = errors.New("query result type is not match")
 			}
 		}
