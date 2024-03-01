@@ -6,18 +6,18 @@ import (
 	"time"
 )
 
-type DateTime time.Time
+type Date time.Time
 
-func (dt *DateTime) MarshalJSON() ([]byte, error) {
+func (dt *Date) MarshalJSON() ([]byte, error) {
 	if dt == nil {
 		return []byte(""), nil
 	}
-	var stamp = fmt.Sprintf("\"%s\"", time.Time(*dt).Format(time.DateTime))
+	var stamp = fmt.Sprintf("\"%s\"", time.Time(*dt).Format(time.DateOnly))
 	return []byte(stamp), nil
 }
 
 // UnmarshalJSON 实现JSON反序列化方法
-func (dt *DateTime) UnmarshalJSON(data []byte) (err error) {
+func (dt *Date) UnmarshalJSON(data []byte) (err error) {
 	var s string
 	if err = json.Unmarshal(data, &s); err != nil {
 		return err
@@ -26,18 +26,18 @@ func (dt *DateTime) UnmarshalJSON(data []byte) (err error) {
 		var t time.Time
 		t, err = time.ParseInLocation(layout, s, time.Local)
 		if err == nil {
-			*dt = (DateTime)(t)
+			*dt = (Date)(t)
 			return nil
 		}
 	}
 	return err
 }
 
-func (dt *DateTime) ToTime() time.Time {
+func (dt *Date) ToTime() time.Time {
 	return time.Time(*dt)
 }
 
-func (dt *DateTime) ToTimeP() *time.Time {
+func (dt *Date) ToTimeP() *time.Time {
 	if dt == nil {
 		return nil
 	}
