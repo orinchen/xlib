@@ -7,10 +7,10 @@ import (
 )
 
 var DatetimeVerifyTag = "xv_datetime"
-var DatetimeErrorInfo = "{0}:电话号码格式不正确"
+var DatetimeErrorInfo = "{0}:日期格式不正确"
 
 func RegisterDatetimeValidation(validate *validator.Validate, trans ut.Translator) error {
-	err := validate.RegisterValidation(CnPhoneNumberVerifyTag, VerifyDatetime)
+	err := validate.RegisterValidation(DatetimeVerifyTag, VerifyDatetime)
 	if trans == nil || err != nil {
 		return err
 	}
