@@ -3,6 +3,7 @@ package xtime
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/orinchen/xlib/xstring"
 	"time"
 )
 
@@ -25,6 +26,26 @@ func (dt *Date) UnmarshalJSON(data []byte) (err error) {
 	for _, layout := range layouts {
 		var t time.Time
 		t, err = time.ParseInLocation(layout, s, time.Local)
+		if err == nil {
+			*dt = (Date)(t)
+			return nil
+		}
+	}
+	return err
+}
+
+func (dt *Date) MarshalText() (text []byte, err error) {
+	if dt == nil {
+		return []byte(""), nil
+	}
+	var stamp = fmt.Sprintf("%s", time.Time(*dt).Format(time.DateOnly))
+	return []byte(stamp), nil
+}
+
+func (dt *Date) UnmarshalText(data []byte) (err error) {
+	for _, layout := range layouts {
+		var t time.Time
+		t, err = time.ParseInLocation(layout, xstring.BytesToString(data), time.Local)
 		if err == nil {
 			*dt = (Date)(t)
 			return nil
