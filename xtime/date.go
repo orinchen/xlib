@@ -12,11 +12,11 @@ import (
 
 type Date time.Time
 
-func (dt Date) MarshalBSONValue() (bsontype.Type, []byte, error) {
-	return bson.MarshalValue(time.Time(dt))
+func (d Date) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bson.MarshalValue(time.Time(d))
 }
 
-func (dt *Date) UnmarshalBSONValue(t bsontype.Type, value []byte) (err error) {
+func (d *Date) UnmarshalBSONValue(t bsontype.Type, value []byte) (err error) {
 	if t != bson.TypeDateTime {
 		return fmt.Errorf("invalid bson value type '%s'", t.String())
 	}
@@ -25,17 +25,17 @@ func (dt *Date) UnmarshalBSONValue(t bsontype.Type, value []byte) (err error) {
 		return fmt.Errorf("invalid bson string value")
 	}
 
-	*dt = Date(time.UnixMilli(s))
+	*d = Date(time.UnixMilli(s))
 	return
 }
 
-func (dt Date) MarshalJSON() ([]byte, error) {
-	var stamp = fmt.Sprintf("\"%s\"", time.Time(dt).Format(time.DateOnly))
+func (d Date) MarshalJSON() ([]byte, error) {
+	var stamp = fmt.Sprintf("\"%s\"", time.Time(d).Format(time.DateOnly))
 	return []byte(stamp), nil
 }
 
 // UnmarshalJSON 实现JSON反序列化方法
-func (dt *Date) UnmarshalJSON(data []byte) (err error) {
+func (d *Date) UnmarshalJSON(data []byte) (err error) {
 	var s string
 	if err = json.Unmarshal(data, &s); err != nil {
 		return err
@@ -44,26 +44,30 @@ func (dt *Date) UnmarshalJSON(data []byte) (err error) {
 		var t time.Time
 		t, err = time.ParseInLocation(layout, s, time.Local)
 		if err == nil {
-			*dt = (Date)(t)
+			*d = (Date)(t)
 			return nil
 		}
 	}
 	return err
 }
 
-func (dt Date) MarshalText() (text []byte, err error) {
-	var stamp = fmt.Sprintf("%s", time.Time(dt).Format(time.DateOnly))
+func (d Date) MarshalText() (text []byte, err error) {
+	var stamp = fmt.Sprintf("%s", time.Time(d).Format(time.DateOnly))
 	return []byte(stamp), nil
 }
 
-func (dt *Date) UnmarshalText(data []byte) (err error) {
+func (d *Date) UnmarshalText(data []byte) (err error) {
 	for _, layout := range layouts {
 		var t time.Time
 		t, err = time.ParseInLocation(layout, xstring.BytesToString(data), time.Local)
 		if err == nil {
-			*dt = (Date)(t)
+			*d = (Date)(t)
 			return nil
 		}
 	}
 	return err
+}
+
+func (d *Date) Time() time.Time {
+	return time.Time(*d)
 }

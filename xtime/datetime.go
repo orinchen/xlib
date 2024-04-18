@@ -59,3 +59,7 @@ func (dt *DateTime) UnmarshalText(data []byte) (err error) {
 	*dt = (DateTime)(*t)
 	return
 }
+
+func (dt *DateTime) Time() time.Time {
+	return time.Time(*dt)
+}
