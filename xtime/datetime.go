@@ -3,18 +3,33 @@ package xtime
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/orinchen/xlib/xstring"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"time"
 )
 
 type DateTime time.Time
 
-func (dt *DateTime) MarshalJSON() ([]byte, error) {
-	if dt == nil {
-		return []byte(""), nil
+func (dt DateTime) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bson.MarshalValue(time.Time(dt))
+}
+
+func (dt *DateTime) UnmarshalBSONValue(t bsontype.Type, value []byte) (err error) {
+	if t != bson.TypeDateTime {
+		return fmt.Errorf("invalid bson value type '%s'", t.String())
 	}
-	var stamp = fmt.Sprintf("\"%s\"", time.Time(*dt).Format(time.DateTime))
-	return []byte(stamp), nil
+	s, _, ok := bsoncore.ReadDateTime(value)
+	if !ok {
+		return fmt.Errorf("invalid bson string value")
+	}
+
+	*dt = DateTime(time.UnixMilli(s))
+	return
+}
+
+func (dt DateTime) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Time(dt))
 }
 
 // UnmarshalJSON 实现JSON反序列化方法
@@ -23,45 +38,24 @@ func (dt *DateTime) UnmarshalJSON(data []byte) (err error) {
 	if err = json.Unmarshal(data, &s); err != nil {
 		return err
 	}
-	for _, layout := range layouts {
-		var t time.Time
-		t, err = time.ParseInLocation(layout, s, time.Local)
-		if err == nil {
-			*dt = (DateTime)(t)
-			return nil
-		}
+	var t *time.Time
+	if t, err = AutoParseInLocation(s, time.Local); err != nil {
+		return
 	}
-	return err
+	*dt = (DateTime)(*t)
+	return
 }
 
-func (dt *DateTime) MarshalText() (text []byte, err error) {
-	if dt == nil {
-		return []byte(""), nil
-	}
-	var stamp = fmt.Sprintf("%s", time.Time(*dt).Format(time.DateTime))
+func (dt DateTime) MarshalText() (text []byte, err error) {
+	var stamp = fmt.Sprintf("%s", time.Time(dt).Format(time.DateTime))
 	return []byte(stamp), nil
 }
 
 func (dt *DateTime) UnmarshalText(data []byte) (err error) {
-	for _, layout := range layouts {
-		var t time.Time
-		t, err = time.ParseInLocation(layout, xstring.BytesToString(data), time.Local)
-		if err == nil {
-			*dt = (DateTime)(t)
-			return nil
-		}
+	var t *time.Time
+	if t, err = AutoParseInLocation(string(data), time.Local); err != nil {
+		return
 	}
-	return err
-}
-
-func (dt *DateTime) ToTime() time.Time {
-	return time.Time(*dt)
-}
-
-func (dt *DateTime) ToTimeP() *time.Time {
-	if dt == nil {
-		return nil
-	}
-	var temp = dt.ToTime()
-	return &temp
+	*dt = (DateTime)(*t)
+	return
 }

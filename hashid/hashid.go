@@ -68,10 +68,27 @@ func (id *HashId) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+func (id *HashId) MarshalText() (text []byte, err error) {
+	str, err := Encode(uint64(*id))
+	if err != nil {
+		return nil, err
+	}
+	return xstring.StringToBytes(fmt.Sprintf("%s", str)), nil
+}
+
+func (id *HashId) UnmarshalText(data []byte) (err error) {
+	ints, err := Decode(xstring.BytesToString(data))
+	if err != nil {
+		return err
+	}
+	*id = HashId(ints)
+	return
+}
+
 type HashIds []uint64
 
-func (ids HashIds) MarshalJSON() ([]byte, error) {
-	str, err := Encode(ids...)
+func (ids *HashIds) MarshalJSON() ([]byte, error) {
+	str, err := Encode(*ids...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,5 +101,26 @@ func (ids *HashIds) UnmarshalJSON(data []byte) (err error) {
 		return err
 	}
 	*ids = ints
+	return
+}
+
+func (ids *HashIds) MarshalText() (text []byte, err error) {
+	str, err := Encode(*ids...)
+	if err != nil {
+		return nil, err
+	}
+	return xstring.StringToBytes(fmt.Sprintf("%s", str)), nil
+}
+
+func (ids *HashIds) UnmarshalText(data []byte) (err error) {
+	hashIds := strings.Split(string(data), ",")
+	for _, s := range hashIds {
+		var id uint64
+		id, err = Decode(s)
+		if err != nil {
+			return err
+		}
+		*ids = append(*ids, id)
+	}
 	return
 }

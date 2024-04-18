@@ -4,16 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/orinchen/xlib/xstring"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"time"
 )
 
 type Date time.Time
 
-func (dt *Date) MarshalJSON() ([]byte, error) {
-	if dt == nil {
-		return []byte(""), nil
+func (dt Date) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bson.MarshalValue(time.Time(dt))
+}
+
+func (dt *Date) UnmarshalBSONValue(t bsontype.Type, value []byte) (err error) {
+	if t != bson.TypeDateTime {
+		return fmt.Errorf("invalid bson value type '%s'", t.String())
 	}
-	var stamp = fmt.Sprintf("\"%s\"", time.Time(*dt).Format(time.DateOnly))
+	s, _, ok := bsoncore.ReadDateTime(value)
+	if !ok {
+		return fmt.Errorf("invalid bson string value")
+	}
+
+	*dt = Date(time.UnixMilli(s))
+	return
+}
+
+func (dt Date) MarshalJSON() ([]byte, error) {
+	var stamp = fmt.Sprintf("\"%s\"", time.Time(dt).Format(time.DateOnly))
 	return []byte(stamp), nil
 }
 
@@ -34,11 +51,8 @@ func (dt *Date) UnmarshalJSON(data []byte) (err error) {
 	return err
 }
 
-func (dt *Date) MarshalText() (text []byte, err error) {
-	if dt == nil {
-		return []byte(""), nil
-	}
-	var stamp = fmt.Sprintf("%s", time.Time(*dt).Format(time.DateOnly))
+func (dt Date) MarshalText() (text []byte, err error) {
+	var stamp = fmt.Sprintf("%s", time.Time(dt).Format(time.DateOnly))
 	return []byte(stamp), nil
 }
 
@@ -52,16 +66,4 @@ func (dt *Date) UnmarshalText(data []byte) (err error) {
 		}
 	}
 	return err
-}
-
-func (dt *Date) ToTime() time.Time {
-	return time.Time(*dt)
-}
-
-func (dt *Date) ToTimeP() *time.Time {
-	if dt == nil {
-		return nil
-	}
-	var temp = dt.ToTime()
-	return &temp
 }
