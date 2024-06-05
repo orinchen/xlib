@@ -1,6 +1,14 @@
 package xtool
 
-func SliceConvert[ST, TT any](source []ST, mapFunc func(ST) (TT, error)) ([]TT, error) {
+func SliceConvert[ST, TT any](source []ST, mapFunc func(ST) TT) []TT {
+	var tags []TT
+	tags, _ = SliceConvertWithError(source, func(item ST) (TT, error) {
+		return mapFunc(item), nil
+	})
+	return tags
+}
+
+func SliceConvertWithError[ST, TT any](source []ST, mapFunc func(ST) (TT, error)) ([]TT, error) {
 	var tags []TT
 	for _, item := range source {
 		if tag, err := mapFunc(item); err != nil {
