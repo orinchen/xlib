@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func InitColorBackend(conf Config) {
+func InitColorBackend(conf Config) slogBackend {
 	conf.Def()
 	slog.SetDefault(slog.New(
 		console.NewHandler(
@@ -16,4 +16,6 @@ func InitColorBackend(conf Config) {
 				TimeFormat: conf.TimeFormat,
 			}),
 	))
+
+	return &emptyBackend{}
 }

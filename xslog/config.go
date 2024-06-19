@@ -7,20 +7,35 @@ import (
 )
 
 type Config struct {
+	Backend    string
 	Level      string
-	TimeFormat string
-	LogFile    *LogFileConfig
+	TimeFormat string         `json:",optional"`
+	LogFile    *LogFileConfig `json:",optional"`
 }
 
 type LogFileConfig struct {
-	Filename  string
-	MaxSize   int
-	MaxBackup int
-	MaxAge    int
-	Compress  bool
+	Filename  string `json:",optional"`
+	MaxSize   int    `json:",optional"`
+	MaxBackup int    `json:",optional"`
+	MaxAge    int    `json:",optional"`
+	Compress  bool   `json:",optional"`
+}
+
+type slogBackend interface {
+	Sync() error
+}
+
+type emptyBackend struct {
+}
+
+func (z *emptyBackend) Sync() error {
+	return nil
 }
 
 func (c *Config) Def() {
+	if c.Backend == "" {
+		c.Backend = "color"
+	}
 	if c.TimeFormat == "" {
 		c.TimeFormat = "2006-01-02 15:04:05"
 	}

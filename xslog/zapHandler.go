@@ -8,6 +8,14 @@ import (
 	"log/slog"
 )
 
+type zapBackend struct {
+	zapcore.Core
+}
+
+func (z *zapBackend) Sync() error {
+	return z.Sync()
+}
+
 func creatorStdIOZapCore(conf Config) zapcore.Core {
 	out := initWriter(conf.LogFile.Filename, conf.LogFile.MaxSize, conf.LogFile.MaxBackup, conf.LogFile.MaxAge)
 	encoder := initEncoder(conf)
@@ -35,10 +43,10 @@ func initWriter(filename string, maxsize, maxBackup, maxAge int) zapcore.WriteSy
 	return zapcore.AddSync(lumberJackLogger)
 }
 
-func InitZapBackend(conf Config) (core zapcore.Core) {
+func InitZapBackend(conf Config) slogBackend {
 	conf.Def()
-	core = creatorStdIOZapCore(conf)
+	core := creatorStdIOZapCore(conf)
 	sl := slog.New(zapslog.NewHandler(core, nil))
 	slog.SetDefault(sl)
-	return core
+	return &zapBackend{core}
 }

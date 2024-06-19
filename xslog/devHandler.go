@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func InitDevBackend(conf Config) {
+func InitDevBackend(conf Config) slogBackend {
 	conf.Def()
 	opts := &devslog.Options{
 		MaxSlicePrintSize:  4,
@@ -19,4 +19,6 @@ func InitDevBackend(conf Config) {
 
 	logger := slog.New(devslog.NewHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
+
+	return &emptyBackend{}
 }
