@@ -71,3 +71,7 @@ func (d *Date) UnmarshalText(data []byte) (err error) {
 func (d *Date) Time() time.Time {
 	return time.Time(*d)
 }
+
+func NewDate(t time.Time) Date {
+	return Date(t)
+}

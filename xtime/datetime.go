@@ -63,3 +63,7 @@ func (dt *DateTime) UnmarshalText(data []byte) (err error) {
 func (dt *DateTime) Time() time.Time {
 	return time.Time(*dt)
 }
+
+func NewDateTime(t time.Time) DateTime {
+	return DateTime(t)
+}
