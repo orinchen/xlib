@@ -14,6 +14,9 @@ func InitDevBackend(conf Config) slogBackend {
 		TimeFormat:         conf.TimeFormat,
 		NewLineAfterLog:    true,
 		MaxErrorStackTrace: 4,
+		HandlerOptions: &slog.HandlerOptions{
+			Level: slogLevel(conf.Level),
+		},
 	}
 	opts.Level = slogLevel(conf.Level)
 
