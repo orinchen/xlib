@@ -4,22 +4,20 @@ go 1.22
 
 require (
 	github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 v10.21.0
+	github.com/go-playground/validator/v10 v10.22.0
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-cz/devslog v0.0.8
 	github.com/json-iterator/go v1.1.12
+	github.com/mdobak/go-xerrors v0.3.1
 	github.com/modern-go/reflect2 v1.0.2
-	github.com/phsym/console-slog v0.3.1
 	github.com/pkg/errors v0.9.1
 	github.com/sqids/sqids-go v0.4.1
-	go.mongodb.org/mongo-driver v1.15.0
-	go.uber.org/zap v1.27.0
-	go.uber.org/zap/exp v0.2.0
+	go.mongodb.org/mongo-driver v1.16.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/text v0.16.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	gorm.io/driver/mysql v1.5.6
-	gorm.io/driver/postgres v1.5.7
+	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/postgres v1.5.9
 	gorm.io/driver/sqlserver v1.5.3
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.10
@@ -40,7 +38,6 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/microsoft/go-mssqldb v1.7.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.25.0 // indirect

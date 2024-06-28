@@ -6,16 +6,17 @@ import (
 	"os"
 )
 
-func InitDevBackend(conf Config) slogBackend {
+func InitDevBackend(conf Config) {
 	conf.Def()
 	opts := &devslog.Options{
 		MaxSlicePrintSize:  4,
 		SortKeys:           true,
-		TimeFormat:         conf.TimeFormat,
+		TimeFormat:         "[15:04:05.000]",
 		NewLineAfterLog:    true,
-		MaxErrorStackTrace: 4,
+		MaxErrorStackTrace: 6,
 		HandlerOptions: &slog.HandlerOptions{
-			Level: slogLevel(conf.Level),
+			AddSource: true,
+			Level:     slogLevel(conf.Level),
 		},
 	}
 	opts.Level = slogLevel(conf.Level)
@@ -23,5 +24,5 @@ func InitDevBackend(conf Config) slogBackend {
 	logger := slog.New(devslog.NewHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
 
-	return &emptyBackend{}
+	return
 }

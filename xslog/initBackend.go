@@ -2,15 +2,15 @@ package xslog
 
 import "strings"
 
-func InitSlog(conf Config) slogBackend {
+func InitSlog(conf Config) {
 	switch strings.ToLower(conf.Backend) {
-	case "zap":
-		return InitZapBackend(conf)
+	case "text":
+		initSysBackend(conf)
+	case "json":
+		initSysBackend(conf)
 	case "dev":
-		return InitDevBackend(conf)
-	case "color":
-		return InitColorBackend(conf)
+		InitDevBackend(conf)
 	default:
-		return InitColorBackend(conf)
+		initSysBackend(conf)
 	}
 }
