@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	Backend string
+	Schema  string
 	Level   string
 	LogFile *LogFileConfig `json:",optional"`
 }
@@ -20,8 +20,8 @@ type LogFileConfig struct {
 }
 
 func (c *Config) Def() {
-	if c.Backend == "" {
-		c.Backend = "dev"
+	if c.Schema == "" {
+		c.Schema = "dev"
 	}
 	if c.Level == "" {
 		c.Level = "info"

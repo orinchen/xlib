@@ -12,7 +12,7 @@ func initSysBackend(conf Config) {
 	opts := &slog.HandlerOptions{
 		AddSource:   true,
 		Level:       slogLevel(conf.Level),
-		ReplaceAttr: replaceAttr,
+		ReplaceAttr: StackTraceReplaceAttr,
 	}
 
 	var fileWriter io.Writer
@@ -27,7 +27,7 @@ func initSysBackend(conf Config) {
 		}
 	}
 
-	switch conf.Backend {
+	switch conf.Schema {
 	case "json":
 		slog.SetDefault(initJsonBackend(fileWriter, opts))
 	case "text":
@@ -54,27 +54,4 @@ func initJsonBackend(w io.Writer, opts *slog.HandlerOptions) (logger *slog.Logge
 		logger = slog.New(slog.NewJSONHandler(w, opts))
 	}
 	return logger
-}
-
-func replaceAttr(_ []string, a slog.Attr) slog.Attr {
-	switch a.Value.Kind() {
-	case slog.KindAny:
-		switch v := a.Value.Any().(type) {
-		case error:
-			a.Value = fmtErr(v)
-		}
-	}
-	return a
-}
-
-func fmtErr(err error) slog.Value {
-	var groupValues []slog.Attr
-	groupValues = append(groupValues, slog.String("msg", err.Error()))
-	frames := getStackFrameFromPC(extractPCFromError(err, 4))
-	if frames != nil {
-		groupValues = append(groupValues,
-			slog.Any("trace", frames),
-		)
-	}
-	return slog.GroupValue(groupValues...)
 }
